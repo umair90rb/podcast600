@@ -1,5 +1,8 @@
 import 'package:brain_store/Loginandregister/screens/login-screen.dart';
+import 'package:brain_store/services/auth.dart';
 import 'package:flutter/material.dart';
+
+AuthServices auth = AuthServices();
 
 showAlertDialog(BuildContext context) {
   // set up the buttons
@@ -17,9 +20,16 @@ showAlertDialog(BuildContext context) {
       "Logout",
       style: TextStyle(color: Colors.orange),
     ),
-    onPressed: () {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    onPressed: () async {
+      auth.signOut().then(
+            (value) => Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LoginScreen(),
+              ),
+              (route) => false
+            ),
+          );
     },
   );
 

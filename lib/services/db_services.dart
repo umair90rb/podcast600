@@ -15,6 +15,7 @@ class DbServices{
   }
 
   Future addDataWithId(String collection, String id, data) {
+
     DocumentReference docRef = firestore.collection(collection).doc(id);
     return docRef.set(data)
         .then((value){return true;})
@@ -29,7 +30,8 @@ class DbServices{
      return querySnapshot.docs;
   }
 
-  Future getDoc(String collection, String docId) async {
+  Future<DocumentSnapshot> getDoc(String collection, String docId) async {
+    print(docId);
     DocumentReference docRef = firestore.collection(collection).doc(docId);
     DocumentSnapshot doc = await docRef.get();
     print(doc.data());

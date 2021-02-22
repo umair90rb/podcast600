@@ -1,4 +1,7 @@
+import 'package:brain_store/BottomNavigationbar/BottomNatigation_page.dart';
 import 'package:brain_store/Loginandregister/screens/login-screen.dart';
+import 'package:brain_store/services/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
@@ -9,6 +12,7 @@ class Landing extends StatefulWidget {
 }
 
 class _LandingState extends State<Landing> {
+  AuthServices auth = AuthServices();
   int _currentPage = 0;
   PageController _controller = PageController();
 
@@ -89,11 +93,17 @@ class _LandingState extends State<Landing> {
                     child: (_currentPage == (_pages.length - 1))
                         ? InkWell(
                             onTap: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => LoginScreen()),
-                              );
+                              User user = auth.getUser;
+                              print(user);
+                              if (user != null) {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => BottomNavigationPage()));
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LoginScreen()),
+                                );
+                              }
                             },
                             child: Text(
                               "GET STARTED",

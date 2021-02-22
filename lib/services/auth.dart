@@ -1,14 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 
-class AuthServices {
+import 'package:flutter/foundation.dart';
+
+class AuthServices with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   User get getUser => _auth.currentUser;
 
   Stream<User> get user => _auth.authStateChanges();
-
 
   Future<User> emailSignIn(String email, String password) async {
     try {
@@ -32,9 +32,11 @@ class AuthServices {
     }
   }
 
+
   Future<bool> forgotPassword(String email) async {
     try {
-      _auth.sendPasswordResetEmail(email: email).then((value){return true;});
+      await _auth.sendPasswordResetEmail(email: email);
+      return true;
     } catch (e) {
       print(e);
       return null;

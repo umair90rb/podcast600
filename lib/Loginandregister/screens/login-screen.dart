@@ -23,11 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    User user = auth.getUser;
-    print(user);
-    if (user != null) {
-      Navigator.pushReplacementNamed(context, '/topics');
-    }
+
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -237,13 +233,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         } else {
                           await dialog.hide();
                           Fluttertoast.showToast(
-                              msg: "This is Center Short Toast",
+                              msg: "Invalid Usename/Password!",
                               toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.red,
-                              textColor: Colors.white,
-                              fontSize: 16.0
                           );
                         }
                       });

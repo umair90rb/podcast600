@@ -1,14 +1,23 @@
+import 'package:brain_store/services/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nice_button/NiceButton.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 class ForgetPassword extends StatefulWidget {
   ForgetPassword({Key key}) : super(key: key);
+
 
   @override
   _ForgetPasswordState createState() => _ForgetPasswordState();
 }
 
 class _ForgetPasswordState extends State<ForgetPassword> {
+
+  TextEditingController email = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  AuthServices auth = AuthServices();
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -17,6 +26,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
       body: Container(
         child: SingleChildScrollView(
           child: Form(
+            key: _formKey,
             child: Column(
               children: [
                 SizedBox(
@@ -66,6 +76,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                 Padding(
                   padding: EdgeInsets.only(top: 10, left: 30, right: 30),
                   child: TextFormField(
+                    controller: email,
                     cursorColor: Colors.orange,
                     validator: (value) {
                       if (value.isEmpty) {
@@ -106,7 +117,39 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                   fontSize: 22,
                   textColor: Colors.white,
                   gradientColors: [Colors.blueGrey[500], Colors.blueGrey[500]],
-                  onPressed: () {},
+                  onPressed: () async {
+                    if (_formKey.currentState.validate()) {
+                      ProgressDialog dialog = ProgressDialog(context);
+                      dialog.style(message: 'Please wait...');
+                      await dialog.show();
+                      auth.forgotPassword(email.text).then((value) async {
+                        print(value);
+                        if(value != null){
+                          await dialog.hide();
+                          Fluttertoast.showToast(
+                              msg: "Reset link send to your email!",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0
+                          );
+                        } else {
+                          await dialog.hide();
+                          Fluttertoast.showToast(
+                              msg: "Something goes wrong!",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0
+                          );
+                        }
+                      });
+                    }
+                  },
                   background: Colors.white,
                 ),
               ],

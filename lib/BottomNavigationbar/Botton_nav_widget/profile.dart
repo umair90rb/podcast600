@@ -1,10 +1,13 @@
+import 'package:brain_store/services/auth.dart';
 import 'package:brain_store/settings/accountdetails.dart';
 import 'package:brain_store/settings/invite.dart';
 import 'package:brain_store/settings/language.dart';
 import 'package:brain_store/settings/paymenthistory.dart';
 import 'package:brain_store/settings/privacypolicy.dart';
 import 'package:brain_store/settings/termsandconfitionspage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nice_button/NiceButton.dart';
 
@@ -18,9 +21,13 @@ class BottomProfile extends StatefulWidget {
 }
 
 class _BottomProfileState extends State<BottomProfile> {
+
+  AuthServices auth = AuthServices();
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    var user = Provider.of<User>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -288,7 +295,7 @@ class _BottomProfileState extends State<BottomProfile> {
                         height: 10,
                       ),
                       Center(
-                        child: Text("tester123@gmail.com"),
+                        child: Text(user.email),
                       ),
                       SizedBox(
                         height: 10,
@@ -310,6 +317,7 @@ class _BottomProfileState extends State<BottomProfile> {
                 gradientColors: [Colors.blueGrey[500], Colors.blueGrey[500]],
                 onPressed: () {
                   Navigator.pop(showAlertDialog(context));
+                  // auth.signOut().then((value) => Navigator.pop(showAlertDialog(context)));
                 },
                 background: Colors.white,
               ),

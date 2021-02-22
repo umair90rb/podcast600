@@ -332,15 +332,15 @@ class _CreateNewAccountState extends State<CreateNewAccount> {
                       ProgressDialog dialog = ProgressDialog(context);
                       dialog.style(message: 'Please wait...');
                       await dialog.show();
-                      print(email.text);
-                      print(password.text);
+
                       auth.signUp(email.text, password.text).then((value) async {
                         if(value != null){
-                          db.addDataWithId('profile', value.uid, {
+                          db.addDataWithId('/profile', value.uid, {
                             'firstName': firstName.text,
                             'lastName': lastName.text,
                             'age': age.text
                           }).then((value) async {
+                            print(value);
                             await dialog.hide();
                             Navigator.pushReplacement(
                               context,

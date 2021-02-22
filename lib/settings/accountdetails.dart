@@ -1,8 +1,52 @@
+import 'package:brain_store/services/auth.dart';
+import 'package:brain_store/services/db_services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:nice_button/NiceButton.dart';
+import 'package:provider/provider.dart';
+import 'package:prompt_dialog/prompt_dialog.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
-class Accountdetails extends StatelessWidget {
+class Accountdetails extends StatefulWidget {
+
+  @override
+  _AccountdetailsState createState() => _AccountdetailsState();
+}
+
+class _AccountdetailsState extends State<Accountdetails> {
+  String firstName = '';
+  String lastName = '';
+
+  DbServices _db = DbServices();
+  AuthServices _auth = AuthServices();
+
+  var user;
+
+  getProfile(String uid){
+    _db.getDoc('profile', uid).then((profile) {
+      firstName = profile['firstName'];
+      lastName = profile['lastName'];
+      mounted ? setState(() {}) : null ;
+    });
+  }
+
+
+  @override
+  void initState() {
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => getProfile(user.uid));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    user = Provider.of<User>(context);
+
+    var size = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
@@ -54,19 +98,27 @@ class Accountdetails extends StatelessWidget {
                         selectedTileColor: Colors.white,
                         tileColor: Colors.white,
                         title: Text(
-                          'Rid',
+                          firstName,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.black54,
                           ),
                         ),
-                        trailing: Text(
-                          "EDIT",
-                          style: TextStyle(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
+                        trailing: InkWell(
+                          onTap: () async {
+                            String result = await prompt(context);
+                            setState(() {
+                              firstName = result;
+                            });
+                          },
+                          child: Text(
+                            "EDIT",
+                            style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
                         ),
                         onTap: () {
                           // Navigator.push(
@@ -106,7 +158,7 @@ class Accountdetails extends StatelessWidget {
                         selectedTileColor: Colors.white,
                         tileColor: Colors.white,
                         title: Text(
-                          'Ro',
+                         lastName,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -114,12 +166,20 @@ class Accountdetails extends StatelessWidget {
                           ),
                           // textScaleFactor: 1.5,
                         ),
-                        trailing: Text(
-                          "EDIT",
-                          style: TextStyle(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
+                        trailing: InkWell(
+                          onTap: () async {
+                            String result = await prompt(context);
+                            setState(() {
+                              lastName = result;
+                            });
+                          },
+                          child: Text(
+                            "EDIT",
+                            style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
                         ),
                         onTap: () {
                           // Navigator.push(
@@ -159,7 +219,7 @@ class Accountdetails extends StatelessWidget {
                         selectedTileColor: Colors.white,
                         tileColor: Colors.white,
                         title: Text(
-                          'radicapro9@gmail.com',
+                          user.email,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -167,13 +227,13 @@ class Accountdetails extends StatelessWidget {
                           ),
                           // textScaleFactor: 1.5,
                         ),
-                        trailing: Text(
-                          "EDIT",
-                          style: TextStyle(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
-                        ),
+                        // trailing: Text(
+                        //   "EDIT",
+                        //   style: TextStyle(
+                        //       color: Colors.orange,
+                        //       fontWeight: FontWeight.bold,
+                        //       fontSize: 16),
+                        // ),
                         onTap: () {
                           // Navigator.push(
                           //   context,
@@ -227,12 +287,16 @@ class Accountdetails extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                               fontSize: 16),
                         ),
-                        onTap: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //       builder: (context) => SettingProfile()),
-                          // );
+                        onTap: () async {
+                          ProgressDialog dialog = ProgressDialog(context);
+                          dialog.style(message: "Please wait...");
+                          await dialog.show();
+                          _auth.forgotPassword(user.email).then((value) async {
+                            await dialog.hide();
+                            value
+                                ? Fluttertoast.showToast(msg: 'Reset link send to email!')
+                                : Fluttertoast.showToast(msg: 'Something goes wrong!');
+                          });
                         },
                       ),
                     ),
@@ -290,6 +354,31 @@ class Accountdetails extends StatelessWidget {
                       ),
                     ),
                   ),
+                  SizedBox(height: 5,),
+                  Padding(
+                    padding: EdgeInsets.only(),
+                    child: NiceButton(
+                      width: size.width * 0.8,
+                      radius: 10,
+                      padding: const EdgeInsets.all(15),
+                      text: "UPDATE",
+                      fontSize: 16,
+                      gradientColors: [Colors.blueGrey[500], Colors.blueGrey[500]],
+                      onPressed: () async {
+                        ProgressDialog dialog = ProgressDialog(context);
+                        dialog.style(message: "Please wait...");
+                        await dialog.show();
+                        _db.updateDoc('profile', user.uid, {
+                          'firstName':firstName,
+                          'lastName':lastName
+                        }).then((value) async {
+                          await dialog.hide();
+                          Fluttertoast.showToast(msg: 'Profile updated');
+                        });
+                      },
+                      background: Colors.white,
+                    ),
+                  )
                 ],
               ),
             ),
