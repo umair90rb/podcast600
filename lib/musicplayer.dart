@@ -28,10 +28,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 ),
                 child: IconButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Podcast()),
-                    );
+                    Navigator.pop(context);
                   },
                   icon: Icon(FontAwesomeIcons.chevronDown),
                 ),

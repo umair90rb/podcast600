@@ -1,24 +1,60 @@
+import 'dart:io';
+
 import 'package:brain_store/BottomNavigationbar/Botton_nav_widget/Profile_sub_screens/journey.dart';
 import 'package:brain_store/BottomNavigationbar/Botton_nav_widget/Profile_sub_screens/stats.dart';
 import 'package:brain_store/BottomNavigationbar/Botton_nav_widget/postcast.dart';
+import 'package:brain_store/services/auth.dart';
+import 'package:brain_store/services/db_services.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:provider/provider.dart';
 
 import '../profile.dart';
 import 'buddylinks.dart';
 
-class Subprofile extends StatelessWidget {
+class Subprofile extends StatefulWidget {
+  @override
+  _SubprofileState createState() => _SubprofileState();
+}
+
+class _SubprofileState extends State<Subprofile> {
+  User user;
+  String name = '';
+  DbServices _db = DbServices();
+  AuthServices _auth = AuthServices();
+  PlatformFile avatar;
+
+  getProfile(String uid){
+    _db.getDoc('profile', uid).then((profile) {
+      name = profile['firstName'] + " " + profile['lastName'];
+      mounted ? setState(() {}) : null ;
+    });
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => getProfile(user.uid));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    user = Provider.of<User>(context);
+
     return DefaultTabController(
-      length: 3,
+      length: 1,
       initialIndex: 0,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,
           leading: IconButton(
             onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => Podcast()));
+              Navigator.pop(context);
             },
             icon: Icon(
               Icons.close_outlined,
@@ -45,20 +81,43 @@ class Subprofile extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Icon(
-                    Icons.account_circle,
-                    size: 80.0,
-                    color: Colors.black,
+                  InkWell(
+                    onTap: () async {
+                      FilePickerResult result = await FilePicker.platform.pickFiles();
+                      ProgressDialog dialog = ProgressDialog(context);
+                      dialog.style(message: 'Please wait...');
+                      if(result != null) {
+                        await dialog.show();
+                        avatar = result.files.first;
+                        _db.uploadFile('avatars', File(avatar.path)).then((value){
+                          _auth.updateUser(value).then((value){
+                            dialog.hide().then((value){
+                              setState(() {});
+                              return Fluttertoast.showToast(msg: 'Profile picture updated!');
+                            });
+                          });
+                        });
+
+                      } else {
+                        return Fluttertoast.showToast(msg: 'No file selected!');
+                      }
+                    },
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundImage: user.photoURL == null && avatar == null ? null : (avatar == null ?  NetworkImage(user.photoURL) : FileImage(File(avatar.path))),
+                      child: user.photoURL == null ? Icon(
+                        Icons.account_circle,
+                        size: 80.0,
+                        color: Colors.white,
+                      ) : null ,
+                    ),
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        'Account Name',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ],
+                  SizedBox(width: 10,),
+                  Text(
+                    name,
+                    style: TextStyle(color: Colors.black),
                   ),
+                  //
                 ],
               ),
             ),
@@ -69,23 +128,23 @@ class Subprofile extends StatelessWidget {
               labelColor: Colors.black,
                indicatorColor: Colors.black,
               tabs: [
-                Tab(
-                  text: "Buddies",
-                ),
+                // Tab(
+                //   text: "Buddies",
+                // ),
                 Tab(
                   text: "Stats",
                 ),
-                Tab(
-                  text: "Journey",
-                ),
+                // Tab(
+                //   text: "Journey",
+                // ),
               ],
             ),
           ),
         ),
         body: TabBarView(children: [
-          Buddylinks(),
+          // Buddylinks(),
           Stats(),
-          Journey(),
+          // Journey(),
         ]),
       ),
     );
