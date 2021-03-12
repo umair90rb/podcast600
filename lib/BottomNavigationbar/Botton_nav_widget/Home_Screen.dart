@@ -8,6 +8,7 @@ import 'package:brain_store/BottomNavigationbar/categories_page/Relationship.dar
 import 'package:brain_store/BottomNavigationbar/categories_page/Travel.dart';
 import 'package:brain_store/BottomNavigationbar/categories_page/carrierandedu.dart';
 import 'package:brain_store/BottomNavigationbar/categories_page/work_per.dart';
+import 'package:brain_store/active_podcaster.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:selectable_container/selectable_container.dart';
@@ -20,16 +21,17 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  bool _select1 = false;
-  bool _select2 = false;
-  bool _select3 = false;
-  bool _select4 = false;
-  bool _select5 = false;
-  bool _select6 = false;
-  bool _select7 = false;
-  bool _select8 = false;
-  bool _select9 = false;
-  bool _select10 = false;
+  dynamic selected = [];
+  bool relationship = false;
+  bool nutrition = false;
+  bool beauty = false;
+  bool career = false;
+  bool work = false;
+  bool entrepreneurship = false;
+  bool travel = false;
+  bool investment = false;
+  bool legal = false;
+  bool emotional = false;
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -78,7 +80,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select1,
+                        selected: relationship,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -111,7 +113,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select1 = !_select1;
+                            relationship = !relationship;
                           });
                         },
                       ),
@@ -124,7 +126,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select2,
+                        selected: nutrition,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -157,7 +159,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select2 = !_select2;
+                            nutrition = !nutrition;
                           });
                         },
                       ),
@@ -175,7 +177,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select3,
+                        selected: beauty,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -208,7 +210,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select3 = !_select3;
+                            beauty = !beauty;
                           });
                         },
                       ),
@@ -221,7 +223,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select4,
+                        selected: career,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -254,7 +256,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select4 = !_select4;
+                            career = !career;
                           });
                         },
                       ),
@@ -272,7 +274,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select5,
+                        selected: work,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -305,7 +307,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select5 = !_select5;
+                            work = !work;
                           });
                         },
                       ),
@@ -318,7 +320,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select6,
+                        selected: entrepreneurship,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -351,7 +353,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select6 = !_select6;
+                            entrepreneurship = !entrepreneurship;
                           });
                         },
                       ),
@@ -369,7 +371,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select7,
+                        selected: travel,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -402,7 +404,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select7 = !_select7;
+                            travel = !travel;
                           });
                         },
                       ),
@@ -415,7 +417,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select8,
+                        selected: investment,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -448,7 +450,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select8 = !_select8;
+                            investment = !investment;
                           });
                         },
                       ),
@@ -466,7 +468,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select9,
+                        selected: legal,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -499,7 +501,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select9 = !_select9;
+                            legal = !legal;
                           });
                         },
                       ),
@@ -512,7 +514,7 @@ class _HomeState extends State<Home> {
                         icon: Icons.check,
                         iconSize: 20,
                         unselectedOpacity: 0.9,
-                        selected: _select10,
+                        selected: emotional,
                         child: Container(
                           height: size.height * 0.30,
                           width: size.width * 0.38,
@@ -546,7 +548,7 @@ class _HomeState extends State<Home> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _select10 = !_select10;
+                            emotional = !emotional;
                           });
                         },
                       ),
@@ -557,14 +559,19 @@ class _HomeState extends State<Home> {
                   ),
                   InkWell(
                     onTap: () {
-//                    Navigator.push(
-//                      context,
-//                      MaterialPageRoute(builder: (context) => SelectableContainer(onPressed: (){
-//                        setState(() {
-//                          _select1;
-//                        });
-//                      },)),
-//                    );
+                      selected.clear();
+                      relationship ? selected.add('"Relationship"') : null ;
+                      nutrition ? selected.add('"Nutrition"') : null ;
+                      beauty ? selected.add('"Beauty"') : null ;
+                      career ? selected.add('"Career"') : null ;
+                      work ? selected.add('"Work"') : null ;
+                      entrepreneurship ? selected.add('"Entrepreneurship"') : null ;
+                      travel ? selected.add('"Travel"') : null ;
+                      investment ? selected.add('"Investment"') : null ;
+                      legal ? selected.add('"Legal"') : null ;
+                      emotional ? selected.add('"Emotional"') : null ;
+                      // print(selected);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ActivePodcaster(selected)));
                     },
                     child: Container(
                       height: 70,

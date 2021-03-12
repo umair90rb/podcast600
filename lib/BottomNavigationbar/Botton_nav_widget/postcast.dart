@@ -3,7 +3,9 @@ import 'package:brain_store/BottomNavigationbar/Botton_nav_widget/profile.dart';
 import 'package:brain_store/musicpage.dart';
 import 'package:brain_store/musicplayer.dart';
 import 'package:brain_store/searchpage.dart';
+import 'package:brain_store/services/db_services.dart';
 import 'package:brain_store/tab_view_widget/tab.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
 
@@ -15,14 +17,8 @@ class Podcast extends StatefulWidget {
 }
 
 class _PodcastState extends State<Podcast> with SingleTickerProviderStateMixin {
-  // static const List<Tab> _tabs = [
-  //   Tab(
-  //     icon: Icon(Icons.home),
-  //   ),
-  //   Tab(
-  //     icon: Icon(Icons.people),
-  //   ),
-  //   Tab(
+
+  DbServices _db = DbServices();
 
   @override
   Widget build(BuildContext context) {
@@ -154,11 +150,12 @@ class _PodcastState extends State<Podcast> with SingleTickerProviderStateMixin {
                     ),
                     InkWell(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => MusicPlayerScreen()),
-                        );
+                        print('featured podcast playing');
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //       builder: (context) => MusicPlayerScreen()),
+                        // );
                       },
                       child: Container(
                         height: 45,
@@ -210,192 +207,59 @@ class _PodcastState extends State<Podcast> with SingleTickerProviderStateMixin {
               SizedBox(
                 height: 20,
               ),
-              Container(
-                width: 500,
-                height: 120,
-                child: Card(
-                  color: Colors.white70,
-                  child: InkWell(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MusicPage())),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const ListTile(
-                          leading:
-                              Icon(Icons.album, size: 50, color: Colors.black),
-                          title: Text('\nFocus Mode'),
-                          subtitle: Text(
-                              '\nAmbient music to help you relax and sooth your mind'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+
+              FutureBuilder(
+                  future: _db.getSnapshot('podcasts'),
+                  builder: (context, snapshot){
+                    if(snapshot.hasData){
+                      List<DocumentSnapshot> podcasts = snapshot.data;
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: podcasts.length,
+                        itemBuilder: (context, index){
+                          print(podcasts[index].data());
+                          return podcastTile(podcasts[index], context);
+                        },
+                      );
+                    }
+                    if(snapshot.hasError){
+                      return Text('Something goes wrong while fetching podcasts!');
+                    }
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
               ),
-              Container(
-                width: 500,
-                height: 120,
-                child: Card(
-                  color: Colors.white70,
-                  child: InkWell(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MusicPage())),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const ListTile(
-                          leading:
-                              Icon(Icons.album, size: 50, color: Colors.black),
-                          title: Text('\nFocus Mode'),
-                          subtitle: Text(
-                              '\nAmbient music to help you relax and sooth your mind'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 500,
-                height: 120,
-                child: Card(
-                  color: Colors.white70,
-                  child: InkWell(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MusicPage())),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const ListTile(
-                          leading:
-                              Icon(Icons.album, size: 50, color: Colors.black),
-                          title: Text('\nFocus Mode'),
-                          subtitle: Text(
-                              '\nAmbient music to help you relax and sooth your mind'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 500,
-                height: 120,
-                child: Card(
-                  color: Colors.white70,
-                  child: InkWell(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MusicPage())),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const ListTile(
-                          leading:
-                              Icon(Icons.album, size: 50, color: Colors.black),
-                          title: Text('\nFocus Mode'),
-                          subtitle: Text(
-                              '\nAmbient music to help you relax and sooth your mind'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 500,
-                height: 120,
-                child: Card(
-                  color: Colors.white70,
-                  child: InkWell(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MusicPage())),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const ListTile(
-                          leading:
-                              Icon(Icons.album, size: 50, color: Colors.black),
-                          title: Text('\nFocus Mode'),
-                          subtitle: Text(
-                              '\nAmbient music to help you relax and sooth your mind'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 500,
-                height: 120,
-                child: Card(
-                  color: Colors.white70,
-                  child: InkWell(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MusicPage())),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const ListTile(
-                          leading:
-                              Icon(Icons.album, size: 50, color: Colors.black),
-                          title: Text('\nFocus Mode'),
-                          subtitle: Text(
-                              '\nAmbient music to help you relax and sooth your mind'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 500,
-                height: 120,
-                child: Card(
-                  color: Colors.white70,
-                  child: InkWell(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MusicPage())),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const ListTile(
-                          leading:
-                              Icon(Icons.album, size: 50, color: Colors.black),
-                          title: Text('\nFocus Mode'),
-                          subtitle: Text(
-                              '\nAmbient music to help you relax and sooth your mind'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 500,
-                height: 120,
-                child: Card(
-                  color: Colors.white70,
-                  child: InkWell(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MusicPage())),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const ListTile(
-                          leading:
-                              Icon(Icons.album, size: 50, color: Colors.black),
-                          title: Text('\nFocus Mode'),
-                          subtitle: Text(
-                              '\nAmbient music to help you relax and sooth your mind'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+
+
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget podcastTile(dynamic podcast, context) {
+    print(podcast);
+    return Card(
+      color: Colors.white70,
+      child: InkWell(
+        onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => MusicPage(podcast))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              leading:
+              Icon(Icons.album, size: 50, color: Colors.black),
+              title: Text(podcast['name']),
+              subtitle: Text(podcast['description']),
+            ),
+          ],
         ),
       ),
     );

@@ -56,6 +56,16 @@ class DbServices{
     return querySnapshot.docs;
   }
 
+  Future getSnapshotWithDualQuery(String collection, String field, List value, String secondField, String secondValue ) async {
+    print(value);
+    CollectionReference colRef = firestore.collection(collection);
+    QuerySnapshot querySnapshot = await colRef
+        .where(field, whereIn: value)
+        .where(secondField, isEqualTo: secondValue)
+        .get();
+    return querySnapshot.docs;
+  }
+
 
   Future uploadFile(String collection, File file) async {
     String name = basename(file.path);

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:stripe_payment/stripe_payment.dart';
 
 class StripeTransactionResponse {
@@ -63,15 +64,17 @@ class StripeService {
     }
   }
 
-  static Future<StripeTransactionResponse> payWithNewCard({String amount, String currency}) async {
+  static Future<StripeTransactionResponse> payWithNewCard({String amount, String currency, ProgressDialog dialog}) async {
     try {
       var paymentMethod = await StripePayment.paymentRequestWithCardForm(
           CardFormPaymentRequest()
       );
+      await dialog.show();
       var paymentIntent = await StripeService.createPaymentIntent(
           amount,
           currency
       );
+      print("paymentIntent: ${paymentIntent}");
       var response = await StripePayment.confirmPaymentIntent(
           PaymentIntent(
               clientSecret: paymentIntent['client_secret'],
@@ -90,6 +93,7 @@ class StripeService {
         );
       }
     } on PlatformException catch(err) {
+      print("error: $err");
       return StripeService.getPlatformExceptionErrorResult(err);
     } catch (err) {
       return new StripeTransactionResponse(

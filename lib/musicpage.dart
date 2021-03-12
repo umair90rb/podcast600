@@ -1,9 +1,18 @@
-import 'package:brain_store/BottomNavigationbar/Botton_nav_widget/postcast.dart';
-import 'package:brain_store/musicplayer.dart';
+import 'package:audio_service/audio_service.dart';
+// import 'package:brain_store/BottomNavigationbar/Botton_nav_widget/postcast.dart';
+// import 'package:brain_store/musicplayer.dart';
+import 'package:brain_store/player.dart';
 import 'package:flutter/material.dart';
 import 'package:favorite_button/favorite_button.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+
+import 'audio_service/BGAudioPlayerScreen.dart';
 
 class MusicPage extends StatefulWidget {
+
+  dynamic podcast;
+  MusicPage(this.podcast);
+
   @override
   _MusicPageState createState() => _MusicPageState();
 }
@@ -29,8 +38,8 @@ class _MusicPageState extends State<MusicPage> {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     fit: BoxFit.cover,
-                    image: AssetImage(
-                      'assets/images/hhhhf.jpg',
+                    image: NetworkImage(
+                      widget.podcast['thumbnail'],
                     ),
                   ),
                 ),
@@ -39,8 +48,7 @@ class _MusicPageState extends State<MusicPage> {
                     radius: 25,
                     backgroundColor: Colors.white,
                     child: InkWell(
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => Podcast())),
+                      onTap: () => Navigator.pop(context),
                       child: ClipOval(
                         child: Icon(
                           Icons.arrow_back_ios,
@@ -99,7 +107,7 @@ class _MusicPageState extends State<MusicPage> {
             padding: EdgeInsets.only(left: 5),
             child: ListTile(
               title: Text(
-                'Lo-Fi Times',
+                widget.podcast['name'],
                 style: TextStyle(
                   fontSize: 35,
                   fontFamily: "Poppins",
@@ -107,7 +115,7 @@ class _MusicPageState extends State<MusicPage> {
                 ),
               ),
               trailing: FavoriteButton(
-                isFavorite: true,
+                isFavorite: false,
                 iconSize: 40,
                 iconColor: Colors.red,
                 valueChanged: (_isFavorite) {
@@ -122,7 +130,7 @@ class _MusicPageState extends State<MusicPage> {
               Icon(
                 Icons.music_note,
               ),
-              Text(" • Develop Focus on Meditation Podcast • 95 min")
+              Text(" • Develop Focus on Meditation Podcast • ${(widget.podcast['duration']/60).toStringAsFixed(2)} min")
             ]),
           ),
           SizedBox(
@@ -133,7 +141,7 @@ class _MusicPageState extends State<MusicPage> {
             child: Row(
               children: <Widget>[
                 Text(
-                  "In this podcast ways of meditiation is \ntold that will help to sooth out things.",
+                  widget.podcast['description'],
                   style: TextStyle(fontSize: 20),
                 ),
               ],
@@ -172,12 +180,52 @@ class _MusicPageState extends State<MusicPage> {
                     ),
                   ],
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MusicPlayerScreen()),
+                onPressed: () async {
+                  // ProgressDialog dialog = ProgressDialog(context);
+                  // dialog.style(message: 'Wait...');
+                  // await dialog.show();
+                  MediaItem item = MediaItem(
+                    id: widget.podcast['podcast'],
+                    album: widget.podcast['name'],
+                    title: widget.podcast['description'],
+                    artist: widget.podcast['email'],
+                    duration: Duration(seconds: widget.podcast['duration'].toInt()),
+                    artUri: widget.podcast['thumbnail'],
                   );
+                  // AudioPlayerTask playerTask = AudioPlayerTask([item]);
+                  // void _audioPlayerTaskEntrypoint() async {
+                  //   AudioServiceBackground.run(() => playerTask);
+                  // }
+                  // await AudioService.connect();
+                  // AudioService.start(
+                  //   backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+                  //   androidNotificationChannelName: 'Audio Service Demo',
+                  //   // Enable this if you want the Android service to exit the foreground state on pause.
+                  //   //androidStopForegroundOnPause: true,
+                  //   androidNotificationColor: 0xFF2196f3,
+                  //   androidNotificationIcon: 'mipmap/ic_launcher',
+                  //   androidEnableQueue: true,
+                  // ).then((value) async {
+                  //   print(value);
+                  //   await dialog.hide();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => BGAudioPlayerScreen(item)),
+                    );
+                  // });
+                  // library.set(item);
+                  // await AudioService.connect();
+                  // await AudioService.start(
+                  //   backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+                  //   androidNotificationChannelName: 'Audio Service Demo',
+                  //   // Enable this if you want the Android service to exit the foreground state on pause.
+                  //   //androidStopForegroundOnPause: true,
+                  //   androidNotificationColor: 0xFF2196f3,
+                  //   androidNotificationIcon: 'mipmap/ic_launcher',
+                  //   androidEnableQueue: true,
+                  // );
+
                 },
               ),
             ),
@@ -186,4 +234,9 @@ class _MusicPageState extends State<MusicPage> {
       ),
     );
   }
+
+  // void _audioPlayerTaskEntrypoint() async {
+  //   AudioServiceBackground.run(() => AudioPlayerTask());
+  // }
+
 }

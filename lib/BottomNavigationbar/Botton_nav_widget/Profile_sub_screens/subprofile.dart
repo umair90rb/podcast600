@@ -21,30 +21,29 @@ class Subprofile extends StatefulWidget {
 }
 
 class _SubprofileState extends State<Subprofile> {
-  User user;
-  String name = '';
+
   DbServices _db = DbServices();
   AuthServices _auth = AuthServices();
   PlatformFile avatar;
 
-  getProfile(String uid){
-    _db.getDoc('profile', uid).then((profile) {
-      name = profile['firstName'] + " " + profile['lastName'];
-      mounted ? setState(() {}) : null ;
-    });
-  }
+  // getProfile(String uid){
+  //   _db.getDoc('profile', uid).then((profile) {
+  //     name = profile['firstName'] + " " + profile['lastName'];
+  //     mounted ? setState(() {}) : null ;
+  //   });
+  // }
 
   @override
   void initState() {
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => getProfile(user.uid));
+    // WidgetsBinding.instance
+    //     .addPostFrameCallback((_) => getProfile(user.uid));
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    user = Provider.of<User>(context);
+    var user = Provider.of<User>(context);
 
     return DefaultTabController(
       length: 1,
@@ -90,11 +89,10 @@ class _SubprofileState extends State<Subprofile> {
                         await dialog.show();
                         avatar = result.files.first;
                         _db.uploadFile('avatars', File(avatar.path)).then((value){
-                          _auth.updateUser(value).then((value){
-                            dialog.hide().then((value){
+                          _auth.updateUser(value).then((value) async {
+                              await dialog.hide();
                               setState(() {});
                               return Fluttertoast.showToast(msg: 'Profile picture updated!');
-                            });
                           });
                         });
 
@@ -104,19 +102,28 @@ class _SubprofileState extends State<Subprofile> {
                     },
                     child: CircleAvatar(
                       radius: 50,
-                      backgroundImage: user.photoURL == null && avatar == null ? null : (avatar == null ?  NetworkImage(user.photoURL) : FileImage(File(avatar.path))),
-                      child: user.photoURL == null ? Icon(
-                        Icons.account_circle,
-                        size: 80.0,
-                        color: Colors.white,
-                      ) : null ,
+                      backgroundImage: user == null && avatar == null ? null : (avatar == null ?  NetworkImage(user.photoURL) : FileImage(File(avatar.path))),
+                      // child: user.photoURL == null ? Icon(
+                      //   Icons.account_circle,
+                      //   size: 80.0,
+                      //   color: Colors.white,
+                      // ) : null ,
                     ),
                   ),
                   SizedBox(width: 10,),
-                  Text(
-                    name,
-                    style: TextStyle(color: Colors.black),
-                  ),
+                  FutureBuilder(
+                    future: _db.getDoc('profile', user.uid),
+                    builder: (context, snapshot){
+                      if(snapshot.hasData){
+                        return Text("${snapshot.data['firstName']} ${snapshot.data['lastName']}",
+                        style: TextStyle(color: Colors.black),);
+                      }
+                      if(snapshot.hasError){
+                        return Text("Error!");
+                      }
+                      return CircularProgressIndicator();
+                    }
+                  )
                   //
                 ],
               ),

@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: "Comrade",
         debugShowCheckedModeBanner: false,
+
         home: Splash(),
       ),
     );
