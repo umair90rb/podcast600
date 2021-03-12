@@ -15,18 +15,23 @@ app.use(bodyParser.json());
 //   Set access token
 const defaultClient = new Client({
   environment: process.env.ENVIRONMENT === "PRODUCTION" ? Environment.Production : Environment.Sandbox,
-  accessToken: "EAAAEMcrwmCs54yFI2yLSWuHxQ4UupSBr_s_9l3fZWm07YQbN_dvoGJ6vWJpmDCf",
+  accessToken: "EAAAEKQE_y8uh-bc38twW-JTntq7c52-jLuCMiVUmH2qb66r7Ul_9H0_VERon4yS",
 });
 
 const { paymentsApi, ordersApi, locationsApi, customersApi } = defaultClient;
 
-app.post('/chargeForCookie', async (request, response) => {
+app.post('/charge', async (request, response) => {
   const requestBody = request.body;
   try {
     const listLocationsResponse = await locationsApi.listLocations();
     const locationId = listLocationsResponse.result.locations[0].id;
-    const createOrderRequest = getOrderRequest(locationId);
+    const createOrderRequest = getOrderRequest(locationId, requestBody.amount);
+    console.log('----------------------------');
+    console.log(createOrderRequest);
+    console.log('----------------------------');
     const createOrderResponse = await ordersApi.createOrder(createOrderRequest);
+    console.log('----------------------------');
+    console.log(createOrderResponse);
 
     const createPaymentRequest = {
       idempotencyKey: crypto.randomBytes(12).toString('hex'),
@@ -49,55 +54,7 @@ app.post('/chargeForCookie', async (request, response) => {
   }
 });
 
-app.post('/chargeCustomerCard', async (request, response) => {
-  const requestBody = request.body;
-
-  try {
-    const listLocationsResponse = await locationsApi.listLocations();
-    const locationId = listLocationsResponse.result.locations[0].id;
-    const createOrderRequest = getOrderRequest(locationId);
-    const createOrderResponse = await ordersApi.createOrder(createOrderRequest);
-    const createPaymentRequest = {
-      idempotencyKey: crypto.randomBytes(12).toString('hex'),
-      customerId: requestBody.customer_id,
-      sourceId: requestBody.customer_card_id,
-      amountMoney: {
-        ...createOrderResponse.result.order.totalMoney,
-      },
-      orderId: createOrderResponse.result.order.id
-    };
-    const createPaymentResponse = await paymentsApi.createPayment(createPaymentRequest);
-    console.log(createPaymentResponse.result.payment);
-
-    response.status(200).json(createPaymentResponse.result.payment);
-  } catch (e) {
-    console.log(
-      `[Error] Status:${e.statusCode}, Messages: ${JSON.stringify(e.errors, null, 2)}`);
-
-    sendErrorMessage(e.errors, response);
-  }
-});
-
-app.post('/createCustomerCard', async (request, response) => {
-  const requestBody = request.body;
-  console.log(requestBody);
-  try {
-    const createCustomerCardRequestBody = {
-      cardNonce: requestBody.nonce
-    };
-    const customerCardResponse = await customersApi.createCustomerCard(requestBody.customer_id, createCustomerCardRequestBody);
-    console.log(customerCardResponse.result.card);
-
-    response.status(200).json(customerCardResponse.result.card);
-  } catch (e) {
-    console.log(
-      `[Error] Status:${e.statusCode}, Messages: ${JSON.stringify(e.errors, null, 2)}`);
-
-    sendErrorMessage(e.errors, response);
-  }
-});
-
-function getOrderRequest(locationId) {
+function getOrderRequest(locationId, amount) {
   return {
     idempotencyKey: crypto.randomBytes(12).toString('hex'),
     order: {
@@ -107,7 +64,7 @@ function getOrderRequest(locationId) {
           name: "Cookie 🍪",
           quantity: "1",
           basePriceMoney: {
-            amount: 100,
+            amount: amount,
             currency: "USD"
           }
         }

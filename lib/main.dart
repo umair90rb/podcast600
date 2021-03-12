@@ -6,12 +6,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_splashscreen/simple_splashscreen.dart';
 import 'Splash_screen/intropages.dart';
+// import './square/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
 }
+//
+// void main() => runApp(MaterialApp(
+//   title: 'Super Cookie',
+//   home: HomeScreen(),
+// ));
+
 
 class MyApp extends StatelessWidget {
   @override

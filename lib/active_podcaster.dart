@@ -5,6 +5,11 @@ import 'package:brain_store/utils/call_utilites.dart';
 import 'package:brain_store/utils/permissions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:square_in_app_payments/models.dart';
+import 'package:square_in_app_payments/in_app_payments.dart';
+import './square/transaction_service.dart';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -41,9 +46,8 @@ class _ActivePodcasterState extends State<ActivePodcaster> {
 
   @override
   Widget build(BuildContext context) {
-
     User user = Provider.of<User>(context);
-print(widget.category);
+    print(widget.category);
     return Scaffold(
       key: _scaffoldState,
       body: FutureBuilder(
@@ -54,9 +58,10 @@ print(widget.category);
             snapshot.data.forEach((element) {
               print("experties: ${element['experties']}");
               print("category: ${widget.category}");
-              print("is contain: ${widget.category.contains(element['experties'])}");
+              print(
+                  "is contain: ${widget.category.contains(element['experties'])}");
             });
-            if(snapshot.data.isEmpty){
+            if (snapshot.data.isEmpty) {
               return Center(
                 child: Text('There is no podcaster online!'),
               );
@@ -78,9 +83,12 @@ print(widget.category);
                     itemCount: snapshot.data.length,
                     itemBuilder: (context, index) {
                       print(snapshot.data[index]['experties']);
-                      print("if value ${!widget.category.contains("${snapshot.data[index]['experties']}")}");
-                      if(!widget.category.contains(snapshot.data[index]['experties'])){
-                        return podcasterTile(snapshot.data[index], user, context);
+                      print(
+                          "if value ${!widget.category.contains("${snapshot.data[index]['experties']}")}");
+                      if (!widget.category
+                          .contains(snapshot.data[index]['experties'])) {
+                        return podcasterTile(
+                            snapshot.data[index], user, context);
                       }
                     }),
               ],
@@ -95,6 +103,55 @@ print(widget.category);
         },
       ),
     );
+  }
+
+  void _onCardEntryCardNonceRequestSuccess(
+      CardDetails result, amount, User user, DocumentSnapshot podcaster) async {
+    try {
+      await chargeCard(result, amount);
+      InAppPayments.completeCardEntry(
+          onCardEntryComplete: () => _onCardEntryComplete(user, podcaster, amount));
+    } on ChargeException catch (ex) {
+      InAppPayments.showCardNonceProcessingError(ex.errorMessage);
+    }
+  }
+
+  void _onCardEntryComplete(User user, DocumentSnapshot podcaster, dynamic amount) async {
+    print('amount charged');
+    dialog.style(message: 'Connecting...');
+    await dialog.show();
+    db.addData('transaction', {
+      'amount': (amount/100),
+      'at':Timestamp.now(),
+      'by': user.uid,
+      'to': podcaster.id
+    }).then((value){
+      Permissions.cameraAndMicrophonePermissionsGranted().then((value) async {
+        if (!value) {
+          await dialog.hide();
+          _scaffoldState.currentState
+              .hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          _scaffoldState.currentState
+              .showSnackBar(SnackBar(content: Text('Something goes wrong!')));
+        }
+        await dialog.hide();
+        return CallUtils.dial(
+            currUserId: user.uid,
+            currUserName: user.displayName == null ? '' : user.displayName,
+            currUserAvatar: user.photoURL == null ? '' : user.photoURL,
+            receiverId: podcaster.id,
+            receiverAvatar: podcaster.data().containsKey('photoURL')
+                ? ''
+                : podcaster['photoURL'],
+            receiverName:
+            podcaster.data().containsKey('name') ? '' : podcaster['email'],
+            context: context);
+      });
+    });
+  }
+
+  void _onCancelCardEntryFlow() {
+    print('something goes wrong!');
   }
 
   Widget podcasterTile(DocumentSnapshot podcaster, User user, context) {
@@ -132,43 +189,54 @@ print(widget.category);
             color: Colors.blue,
             icon: Icons.call,
             onTap: () async {
-              // _scaffoldState.currentState.showSnackBar(
-              //   SnackBar(content: Text("Pay \$${podcaster['charges']} before calling!"))
-              // );
-              StripeService.init();
-              return StripeService.payWithNewCard(amount: "${int.parse(podcaster['charges'])*100}", currency: 'usd', dialog: dialog).then((value) async {
-                if(value.success){
-                  await dialog.hide();
-                  _scaffoldState.currentState.hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
-                  _scaffoldState.currentState.showSnackBar(
-                      SnackBar(content: Text(value.message), duration: Duration(milliseconds: 500)),);
-                  dialog.style(message: 'Connecting...');
-                  await dialog.show();
-                  Permissions.cameraAndMicrophonePermissionsGranted().then((value) async {
-                    if(!value){
-                      await dialog.hide();
-                      _scaffoldState.currentState.hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
-                      _scaffoldState.currentState.showSnackBar(
-                          SnackBar(content: Text('Something goes wrong!')));
-                    }
-                    dialog.hide().then((value){
-                      return CallUtils.dial(
-                          currUserId: user.uid,
-                          currUserName: user.displayName == null ? '' : user.displayName,
-                          currUserAvatar: user.photoURL == null ? '' : user.photoURL,
-                          receiverId: podcaster.id,
-                          receiverAvatar: podcaster.data().containsKey('photoURL') ? '' : podcaster['photoURL'],
-                          receiverName: podcaster.data().containsKey('name') ? '' : podcaster['email'],
-                          context: context);
-                    });
-                  });
+              _scaffoldState.currentState.showSnackBar(SnackBar(
+                  content:
+                      Text("Pay \$${podcaster['charges']} before calling!")));
 
-                }
-                await dialog.hide();
+              return InAppPayments.startCardEntryFlow(
+                      onCardNonceRequestSuccess: (card) =>
+                          _onCardEntryCardNonceRequestSuccess(
+                              card,
+                              (int.parse(podcaster['charges']) * 100),
+                              user,
+                              podcaster),
+                      onCardEntryCancel: _onCancelCardEntryFlow,
+                      collectPostalCode: false)
+                  .then((value) {});
 
-
-              });
-
+              // StripeService.init();
+              // return StripeService.payWithNewCard(amount: "${int.parse(podcaster['charges'])*100}", currency: 'usd', dialog: dialog).then((value) async {
+              //   if(value.success){
+              //     await dialog.hide();
+              //     _scaffoldState.currentState.hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
+              //     _scaffoldState.currentState.showSnackBar(
+              //         SnackBar(content: Text(value.message), duration: Duration(milliseconds: 500)),);
+              //     dialog.style(message: 'Connecting...');
+              //     await dialog.show();
+              //     Permissions.cameraAndMicrophonePermissionsGranted().then((value) async {
+              //       if(!value){
+              //         await dialog.hide();
+              //         _scaffoldState.currentState.hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
+              //         _scaffoldState.currentState.showSnackBar(
+              //             SnackBar(content: Text('Something goes wrong!')));
+              //       }
+              //       dialog.hide().then((value){
+              //         return CallUtils.dial(
+              //             currUserId: user.uid,
+              //             currUserName: user.displayName == null ? '' : user.displayName,
+              //             currUserAvatar: user.photoURL == null ? '' : user.photoURL,
+              //             receiverId: podcaster.id,
+              //             receiverAvatar: podcaster.data().containsKey('photoURL') ? '' : podcaster['photoURL'],
+              //             receiverName: podcaster.data().containsKey('name') ? '' : podcaster['email'],
+              //             context: context);
+              //       });
+              //     });
+              //
+              //   }
+              //   await dialog.hide();
+              //
+              //
+              // });
             },
           ),
           IconSlideAction(
